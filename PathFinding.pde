@@ -7,6 +7,7 @@ Node[][] allnodes = new Node[30][16];
 
 ArrayList<Node> ExploredNode = new ArrayList<Node>();
 ArrayList<Node> ChosenNode = new ArrayList<Node>();
+ArrayList<Node> path = new ArrayList<Node>();
 
 Node current;
 Node start;
@@ -39,7 +40,7 @@ void setup()
    }
 
    start = allnodes[5][5]; // col raw 
-   
+   start.isExplored = true;
    
    
    
@@ -78,6 +79,11 @@ for(int j = 0; j < 15 ; j++)
    allnodes[12+j][12].isExplored = true;
 }
 
+
+for(int j = 0; j < 15 ; j++)
+{
+   allnodes[12+j][5].isExplored = true;
+}
 
 }
 
@@ -143,15 +149,20 @@ if(!targetFound)
     
     node.G_cost = G_cost;
     node.H_cost = H_cost;
- 
+   if(node.isExplored)
+   {
+   
+   }
+   else
+   {
     ExploredNode.add(node);
-     
+  }   
   } 
   
     for(Node chosennode : ChosenNode)
    {
      drawMark(chosennode.row,chosennode.col,2);
-     writeText(chosennode);
+     writeText(chosennode,0);
      ExploredNode.remove(chosennode);
    }
    
@@ -168,7 +179,7 @@ if(!targetFound)
    {    
 
      drawMark(explorednode.row,explorednode.col,1);
-     writeText(explorednode);
+     writeText(explorednode,0);
      
      
      if(Min_F_Cost >= (explorednode.G_cost + explorednode.H_cost) && (explorednode.H_cost < Min_H_Cost) )
@@ -201,6 +212,7 @@ if(!targetFound)
       println("Target found");
    }
  
+ 
 }
   
  else
@@ -208,7 +220,7 @@ if(!targetFound)
      for(Node chosennode : ChosenNode)
    {
      drawMark(chosennode.row,chosennode.col,2);
-     writeText(chosennode);
+     writeText(chosennode,0);
  
    }
     
@@ -216,9 +228,7 @@ if(!targetFound)
    {    
 
       drawMark(explorednode.row,explorednode.col,1);
-      writeText(explorednode);
- 
-     
+      writeText(explorednode,0);
    }
  
  
@@ -227,43 +237,30 @@ if(!targetFound)
   
    
  
-  ArrayList<Node> path = new ArrayList<Node>();
+  
   path.add(current);
-    
-  while(current!=start)
-  {
-    ArrayList<Node> neighbors = new ArrayList<Node>();
-    neighbors = FindNeighbor(current,"TraceBack");
-    Node min_node = neighbors.get(0);
-    int Min_cost = min_node.G_cost + min_node.H_cost ;
-    
-    for(Node TheNode:neighbors)
-    {
-        
-     if(((TheNode.G_cost + TheNode.H_cost) < Min_cost ) && (TheNode.G_cost>0))
-     { 
-       Min_cost = (TheNode.G_cost + TheNode.H_cost);
-       min_node = TheNode;
-     }
-    }
-    
-    println(min_node);
-    path.add(min_node);
-    current = min_node;
  
+   while(current!=start)
+  {
+    println("Finding parents");
+    current = current.parent;
+    path.add(current);  
   }
   
-
-  for(Node point : path)
- {
-   drawMark(point.row,point.col,0);
- }
-  
-
+ } 
  
- }
-  
-  
+ int counter = 0;
+   for(Node point : path)
+ {
+   if(point!=start)
+   {
+   counter++;
+   }
+   drawMark(point.row,point.col,0);
+   point.isPath = true;
+   writeText(point,counter);
+ } 
+ 
 }
  
  
@@ -288,7 +285,7 @@ int[] CalculateCost(Node parent_node,Node this_node)
    
    if((parent_node.row != this_node.row)&&(parent_node.col != this_node.col))
    {
-     // diagonal 
+    
      G_cost = parent_node.G_cost + 14;
    }
    else
@@ -296,16 +293,33 @@ int[] CalculateCost(Node parent_node,Node this_node)
      G_cost = parent_node.G_cost + 10;
    }
    
-    
    
    int delta_row = Math.abs(this_node.row - target.row);
    int delta_col = Math.abs(this_node.col - target.col);
    
    H_cost = (Math.max(delta_row,delta_col) - Math.min(delta_row, delta_col)) * 10 + Math.min(delta_col, delta_row) * 14;
    
-   
+    if(this_node.G_cost == 0)
+    {
    costs[0] = G_cost;
    costs[1] = H_cost;
+   this_node.parent = parent_node; 
+    }
+    else if(G_cost <  this_node.G_cost || ((G_cost == this_node.G_cost)  && (H_cost < this_node.H_cost)))
+    {
+   costs[0] = G_cost;
+   costs[1] = H_cost;
+   this_node.parent = parent_node; 
+   
+    }
+    else
+    {
+   costs[0] = this_node.G_cost;
+   costs[1] = this_node.H_cost;
+    }
+    this_node.G_cost = costs[0];
+    this_node.H_cost = costs[1];
+    
    return costs;
 }
 
@@ -324,6 +338,7 @@ class Node
   
   boolean isTarget = false;
   boolean isExplored = false;
+  boolean isPath = false;
   
   Node parent; 
   
@@ -361,12 +376,13 @@ void drawMark(int col, int row ,int colorCode)
 }
 
  
-void writeText(Node node )
+void writeText(Node node,int index)
 {
   
- 
+if(!node.isPath)
+{
 fill(255,255,0);
-textSize(28);
+textSize(22);
 text(node.G_cost + node.H_cost, (node.row + 0.1 ) * widthSpace , (node.col + 0.9) * heightSpace); 
   
  
@@ -379,7 +395,13 @@ text(node.G_cost, (node.row) * widthSpace , (node.col + 0.3) * heightSpace);
 fill(255,255,0);
 textSize(12);
 text(node.H_cost, (node.row + 0.65) * widthSpace , (node.col + 0.3) * heightSpace); 
-  
+}
+else
+{
+ fill(255,255,0);
+textSize(22);
+text(index, (node.row + 0.1 ) * widthSpace , (node.col + 0.9) * heightSpace); 
+}
 }
 
   
@@ -403,55 +425,21 @@ ArrayList<Node> FindNeighbor(Node node,String Mode)
   universe.add(allnodes[row + 1][col]);
   universe.add(allnodes[row + 1][col + 1]);
    
-  if(!allnodes[row - 1][col - 1].isExplored) 
-  {
+ 
   result.add(allnodes[row - 1][col - 1]);
-  } 
-  
-  if(!allnodes[row - 1][col].isExplored) 
-  {
   result.add(allnodes[row - 1][col]);
-  } 
-  
-  if(!allnodes[row - 1][col + 1].isExplored) 
-  {
   result.add(allnodes[row - 1][col + 1]);
-  } 
-  
-  if(!allnodes[row][col - 1].isExplored) 
-  {
   result.add(allnodes[row][col - 1]);
-  } 
-  
-  if(!allnodes[row][col + 1].isExplored) 
-  {
   result.add(allnodes[row][col + 1]);
-  } 
-  
-  if(!allnodes[row + 1][col - 1].isExplored) 
-  {
   result.add(allnodes[row + 1][col - 1]);
-  } 
-  
-  if(!allnodes[row + 1][col].isExplored) 
-  {
   result.add(allnodes[row + 1][col]);
-  } 
-   
-  if(!allnodes[row + 1][col + 1].isExplored) 
-  {
   result.add(allnodes[row + 1][col + 1]);
-  }   
-  
+ 
   
   
   if(Mode == "FindNeighbour")
   {
-    
-    for(Node this_node : result)
-    {
-       this_node.parent = node;
-    }
+ 
     return result;
   }
   else
@@ -461,7 +449,7 @@ ArrayList<Node> FindNeighbor(Node node,String Mode)
       for(Node this_node : result)
     {
       universe.remove(tempnode);
-      this_node.parent = node;
+ 
     }
     
  
