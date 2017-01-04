@@ -225,40 +225,58 @@ if(!targetFound)
 
 
   
-  
-  boolean get = false;
-  Node node = current;
+   
+ 
   ArrayList<Node> path = new ArrayList<Node>();
   path.add(current);
-  
-  
-  
-  
-  while(!get)
-  {
-    node = node.parent;
-    path.add(node);
     
-    if(node == start)
+  while(current!=start)
+  {
+    ArrayList<Node> neighbors = new ArrayList<Node>();
+    neighbors = FindNeighbor(current,"TraceBack");
+    Node min_node = neighbors.get(0);
+    int Min_cost = min_node.G_cost + min_node.H_cost ;
+    
+    for(Node TheNode:neighbors)
     {
-      get = true;
-  
+        
+     if(((TheNode.G_cost + TheNode.H_cost) < Min_cost ) && (TheNode.G_cost>0))
+     { 
+       Min_cost = (TheNode.G_cost + TheNode.H_cost);
+       min_node = TheNode;
+     }
     }
-  }
- 
-  for(Node thisNode : path)
-  {
-   drawMark(thisNode.row,thisNode.col,0);
-  }
- 
     
-   drawMark(target.row,target.col,0);
-   drawMark(start.row,start.col,0);
+    println(min_node);
+    path.add(min_node);
+    current = min_node;
+ 
+  }
+  
+
+  for(Node point : path)
+ {
+   drawMark(point.row,point.col,0);
+ }
+  
+
  
  }
   
   
 }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
 int[] CalculateCost(Node parent_node,Node this_node)
 {
@@ -427,12 +445,32 @@ ArrayList<Node> FindNeighbor(Node node,String Mode)
   
   
   
- 
-      for(Node this_node : result)
+  if(Mode == "FindNeighbour")
+  {
+    
+    for(Node this_node : result)
     {
        this_node.parent = node;
     }
     return result;
+  }
+  else
+  {
+    for(Node tempnode: result)
+ 
+      for(Node this_node : result)
+    {
+      universe.remove(tempnode);
+      this_node.parent = node;
+    }
+    
+ 
+    
+    return result;
+  }
+ 
+
+ 
  
  
   
