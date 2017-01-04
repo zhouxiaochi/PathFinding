@@ -2,32 +2,20 @@ int w;
 int h;
 int widthSpace;
 int heightSpace;
-
 Node[][] allnodes = new Node[30][16];
-
-ArrayList<Node> ExploredNode = new ArrayList<Node>();
-ArrayList<Node> ChosenNode = new ArrayList<Node>();
-
 Node current;
 Node start;
 Node target;
-
-boolean proceed;
-
-
-
-boolean targetFound;
-
 void setup()
 {
   size(1500,800);
   background(255);
   widthSpace = 50 ;
-  heightSpace = 50; 
+  heightSpace = 50;
   w = displayWidth;
   h = displayHeight;
   
-  
+  current = start;
    
    for(int col = 0; col< 30; col++)
    {
@@ -38,15 +26,10 @@ void setup()
       } 
    }
 
-   start = allnodes[5][5]; // col raw 
-   
-   
-   
-   
-   
-   target = allnodes[15][11];
+   start = allnodes[10][5]; // col raw 
+   target = allnodes[24][12];
     
-   target.isTarget = true;
+   allnodes[3][15].isTarget = true;
 
     for(int col = 0; col< 30; col++)
    {
@@ -59,32 +42,8 @@ void setup()
       } 
    }
 
-    current = start;
-    
-    for(int i = 5; i < 15 ; i ++)
-{
-   allnodes[12][i].isExplored = true;
-}   
-
-
-for(int j = 0; j < 15 ; j++)
-{
-   allnodes[12+j][10].isExplored = true;
-}
-
-
-for(int j = 0; j < 15 ; j++)
-{
-   allnodes[12+j][12].isExplored = true;
-}
-
 
 }
-
-
-
-
-
 
 
 void draw()
@@ -102,11 +61,6 @@ void draw()
  // col, row, mode 0 is red, 1 is green , 2 is blue , 3 is black
   
 
-
-if(!targetFound)
-{
-
-
     for(int col = 0; col< 30; col++)
    {
       for(int row = 0; row < 16; row++)
@@ -118,148 +72,26 @@ if(!targetFound)
       } 
    }
    
-   
    drawMark(target.row,target.col,0);
    drawMark(start.row,start.col,0);
- 
- 
-   
-  ArrayList<Node> Neighbor = FindNeighbor(current,"FindNeighbour");
- 
-  for(Node node: Neighbor)
-  {
-    
-    
-    
-      int G_cost;
-      int H_cost;
-      int F_cost;
-    
-   
-    G_cost =  CalculateCost(current,node)[0];
-    H_cost =  CalculateCost(current,node)[1];
-     
-    F_cost = G_cost + H_cost;
-    
-    node.G_cost = G_cost;
-    node.H_cost = H_cost;
- 
-    ExploredNode.add(node);
-     
-  } 
+   writeText(64,50,14,start.row,start.col);
   
-    for(Node chosennode : ChosenNode)
-   {
-     drawMark(chosennode.row,chosennode.col,2);
-     writeText(chosennode);
-     ExploredNode.remove(chosennode);
-   }
-   
-   
-   Node Min_node = ExploredNode.get(0);
-   
-    
-   int Min_F_Cost = ExploredNode.get(0).G_cost + ExploredNode.get(0).H_cost;
-   int Min_H_Cost = ExploredNode.get(0).H_cost;
-   
-   
-   
-   for(Node explorednode : ExploredNode)
-   {    
-
-     drawMark(explorednode.row,explorednode.col,1);
-     writeText(explorednode);
-     
-     
-     if(Min_F_Cost >= (explorednode.G_cost + explorednode.H_cost) && (explorednode.H_cost < Min_H_Cost) )
-     {
-       Min_F_Cost = explorednode.G_cost + explorednode.H_cost;
-       Min_H_Cost = explorednode.H_cost;
-       Min_node = explorednode;
-       Min_node.G_cost = Min_node.G_cost;
-       Min_node.H_cost = Min_node.H_cost;
-       
-     }
-     
-   }
-   
- 
-
-   
-
-    
-   current = Min_node;
-   ChosenNode.add(current);
-   current.isExplored = true;
-   ExploredNode.remove(current);
-
-   drawMark(current.row,current.col,0);
-    
-   if(current.isTarget)
-   {
-      targetFound = true;
-      println("Target found");
-   }
  
 }
-  
- else
- {
-     for(Node chosennode : ChosenNode)
-   {
-     drawMark(chosennode.row,chosennode.col,2);
-     writeText(chosennode);
- 
-   }
-    
-   for(Node explorednode : ExploredNode)
-   {    
-
-      drawMark(explorednode.row,explorednode.col,1);
-      writeText(explorednode);
- 
-     
-   }
- 
- 
 
 
-  
-  
-  boolean get = false;
-  Node node = current;
-  ArrayList<Node> path = new ArrayList<Node>();
-  path.add(current);
-  
-  
-  
-  
-  while(!get)
-  {
-    node = node.parent;
-    path.add(node);
-    
-    if(node == start)
-    {
-      get = true;
-  
-    }
-  }
- 
-  for(Node thisNode : path)
-  {
-   drawMark(thisNode.row,thisNode.col,0);
-  }
- 
-    
-   drawMark(target.row,target.col,0);
-   drawMark(start.row,start.col,0);
- 
- }
-  
-  
-}
- 
+
+
+
+
+
+
+
+
+
+
+
+
 int[] CalculateCost(Node parent_node,Node this_node)
 {
  
@@ -278,21 +110,47 @@ int[] CalculateCost(Node parent_node,Node this_node)
      G_cost = parent_node.G_cost + 10;
    }
    
-    
-   
-   int delta_row = Math.abs(this_node.row - target.row);
-   int delta_col = Math.abs(this_node.col - target.col);
-   
-   H_cost = (Math.max(delta_row,delta_col) - Math.min(delta_row, delta_col)) * 10 + Math.min(delta_col, delta_row) * 14;
-   
-   
+   H_cost = (Math.max(this_node.row, this_node.col) - Math.min(this_node.row, this_node.col)) * 10 + Math.min(this_node.row, this_node.col) * 14;
    costs[0] = G_cost;
    costs[1] = H_cost;
    return costs;
 }
 
- 
- 
+
+
+
+
+
+
+
+
+void UpdateCost(Node this_node) // only appicable to explored nodes
+{
+  ArrayList<Node> neighbors = new ArrayList<Node>();
+  
+  neighbors = FindNeighbor(this_node,"UpdateCost");
+  int min_F_cost = neighbors.get(0).G_cost + neighbors.get(0).H_cost;
+  int min_H_cost = neighbors.get(0).H_cost;
+  
+  
+  Node min_node = this_node.parent;
+  for(Node node : neighbors) // find the explored neighbor that has the minimum cost
+  {
+    if(node.isExplored)
+    {
+      if((node.G_cost + node.H_cost < min_F_cost)&&(node.H_cost < min_H_cost))
+      {
+        min_F_cost = node.G_cost + node.H_cost; 
+        min_H_cost = node.H_cost;
+        min_node = node;
+      }
+    }
+  }
+  
+  this_node.G_cost = CalculateCost(min_node,this_node)[0];
+  this_node.H_cost = CalculateCost(min_node,this_node)[1];
+  this_node.parent = min_node;
+}
 
 
 
@@ -341,30 +199,41 @@ void drawMark(int col, int row ,int colorCode)
   
   rect(col * widthSpace,row * heightSpace,50,50);
 }
-
  
-void writeText(Node node )
+void writeText(int F_cost, int G_cost, int H_cost, int col, int row )
 {
   
  
 fill(255,255,0);
-textSize(28);
-text(node.G_cost + node.H_cost, (node.row + 0.1 ) * widthSpace , (node.col + 0.9) * heightSpace); 
+textSize(32);
+text(F_cost, (col + 0.1 ) * widthSpace , (row + 0.9) * heightSpace); 
   
  
 fill(255,255,0);
-textSize(12);
-text(node.G_cost, (node.row) * widthSpace , (node.col + 0.3) * heightSpace); 
+textSize(15);
+text(G_cost, (col) * widthSpace , (row + 0.3) * heightSpace); 
  
 
  
 fill(255,255,0);
-textSize(12);
-text(node.H_cost, (node.row + 0.65) * widthSpace , (node.col + 0.3) * heightSpace); 
-  
+textSize(15);
+text(H_cost, (col + 0.65) * widthSpace , (row + 0.3) * heightSpace); 
+ 
+
 }
 
-  
+ 
+
+
+
+
+
+
+
+
+
+
+
 ArrayList<Node> FindNeighbor(Node node,String Mode)
 {
   ArrayList<Node> result = new ArrayList<Node>();
@@ -427,14 +296,17 @@ ArrayList<Node> FindNeighbor(Node node,String Mode)
   
   
   
- 
-      for(Node this_node : result)
+  if(Mode == "FindNeighbour")
+  {
+    return result;
+  }
+  else
+  {
+    for(Node tempnode: result)
     {
-       this_node.parent = node;
+      universe.remove(tempnode);
     }
     return result;
- 
- 
-  
+  }
    
 }
